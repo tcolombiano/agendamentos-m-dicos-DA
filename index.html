@@ -462,18 +462,9 @@
 
 <script>
 /* =========================================================
-   1. DADOS
+   1. DADOS — base vazia
    ========================================================= */
-let COLABORADORES = [
-  {nome:'Ana Beatriz Sousa',   setor:'Gabinete da Diretoria'},
-  {nome:'Carlos Eduardo Lima', setor:'Recursos Humanos'},
-  {nome:'Fernanda Rocha',      setor:'Finanças'},
-  {nome:'João Pedro Alves',    setor:'Compras e Licitações'},
-  {nome:'Mariana Castro',      setor:'Patrimônio e Logística'},
-  {nome:'Rafael Nunes',        setor:'Tecnologia da Informação'},
-  {nome:'Juliana Prado',       setor:'Secretaria Executiva'},
-  {nome:'Bruno Tavares',       setor:'Protocolo e Arquivo'}
-];
+let COLABORADORES = [];   /* nenhum servidor cadastrado */
 
 const TIPOS        = ['Atividade externa','Consulta médica','Exame','Perícia'];
 const STATUSES     = ['Agendado','Confirmado','Realizado','Cancelado','Reagendado'];
@@ -485,46 +476,8 @@ const SLUG_STATUS = {'Agendado':'agendado','Confirmado':'confirmado','Realizado'
 /* Senha para ações administrativas (excluir todos os agendamentos) */
 const SENHA_ADMIN = 'agendamentos';
 
-/* [offsetDias, inicio, fim, idxColaborador, tipo, assunto, local, status, prioridade] */
-const RAW = [
-  [-12,'09:00','12:00',3,'Atividade externa','Reunião com fornecedor de material de escritório','Fornecedor XYZ — Av. Paulista, 1200','Realizado','Média'],
-  [-10,'14:00','16:00',1,'Consulta médica','Consulta ocupacional — ASO periódico','Clínica Saúde Ocupacional','Realizado','Alta'],
-  [ -8,'08:30','10:00',6,'Atividade externa','Visita ao arquivo central','Arquivo Central — Barra Funda','Realizado','Baixa'],
-  [ -6,'10:00','11:30',2,'Exame','Exames laboratoriais de rotina','Laboratório Central','Realizado','Média'],
-  [ -5,'15:00','16:00',4,'Consulta médica','Avaliação com oftalmologista','Clínica Visão','Cancelado','Média'],
-  [ -3,'09:00','10:30',0,'Atividade externa','Reunião no Ministério — prestação de contas','Esplanada dos Ministérios, Bloco C','Realizado','Alta'],
-  [ -2,'13:30','17:00',5,'Atividade externa','Treinamento de sistema no fornecedor','Sede do fornecedor — Santo Amaro','Reagendado','Média'],
-  [ -1,'08:00','09:00',7,'Perícia','Perícia médica — servidor','Junta Médica Oficial','Realizado','Alta'],
-  [  0,'09:00','10:00',1,'Consulta médica','Consulta clínica — acompanhamento','Clínica Saúde Ocupacional','Confirmado','Alta'],
-  [  0,'14:00','16:00',2,'Atividade externa','Assinatura de contrato em cartório','Cartório do 5º Ofício — Centro','Agendado','Alta'],
-  [  0,'10:30','11:30',6,'Exame','Exame de imagem — ultrassonografia','Centro Diagnóstico Imagem','Confirmado','Média'],
-  [  1,'08:30','12:00',0,'Atividade externa','Audiência no Tribunal de Contas','TCE — Sede','Agendado','Alta'],
-  [  1,'15:00','16:00',4,'Consulta médica','Consulta dermatológica','Clínica Derma','Agendado','Baixa'],
-  [  2,'09:00','11:00',3,'Atividade externa','Cotação de preços — mercado municipal','Mercado Municipal','Agendado','Média'],
-  [  2,'13:00','14:00',7,'Consulta médica','Consulta com cardiologista','Instituto do Coração','Confirmado','Alta'],
-  [  3,'10:00','12:00',5,'Atividade externa','Visita técnica a data center','Data Center — Tamboré','Agendado','Média'],
-  [  3,'08:00','09:00',1,'Exame','Coleta de sangue — ASO','Laboratório Central','Agendado','Média'],
-  [  4,'14:30','16:30',2,'Atividade externa','Reunião com banco — renegociação','Agência bancária — Centro','Agendado','Média'],
-  [  4,'09:00','10:00',6,'Consulta médica','Avaliação odontológica','Odonto Empresa','Confirmado','Baixa'],
-  [  5,'11:00','12:00',0,'Perícia','Perícia administrativa','Junta Médica Oficial','Agendado','Alta'],
-  [  5,'15:00','17:00',4,'Atividade externa','Inventário em unidade descentralizada','Unidade Regional Norte','Agendado','Baixa'],
-  [  6,'08:00','10:00',3,'Consulta médica','Consulta ortopédica','Clínica Orto','Agendado','Média'],
-  [  6,'13:00','15:00',1,'Atividade externa','Entrevistas em feira de recrutamento','Centro de Convenções','Agendado','Média'],
-  [  7,'09:30','11:00',7,'Atividade externa','Protocolo de documentos em órgão externo','Órgão Federal — Setor Bancário Sul','Agendado','Baixa'],
-  [  8,'10:00','11:00',2,'Exame','Exame audiométrico','Clínica Saúde Ocupacional','Agendado','Média'],
-  [  8,'14:00','16:00',5,'Atividade externa','Reunião de alinhamento com fornecedor de TI','Fornecedor — Vila Olímpia','Agendado','Média'],
-  [ 10,'09:00','12:00',0,'Atividade externa','Seminário de gestão pública','Escola de Governo','Agendado','Baixa'],
-  [ 10,'15:00','16:00',6,'Consulta médica','Retorno clínico','Clínica Saúde Ocupacional','Agendado','Média'],
-  [ 12,'08:00','09:30',4,'Consulta médica','Consulta com endocrinologista','Clínica Endo','Agendado','Média'],
-  [ 13,'10:00','12:00',3,'Atividade externa','Vistoria de bens em depósito','Depósito Central','Agendado','Baixa'],
-  [ 14,'14:00','15:00',1,'Perícia','Perícia médica — readaptação','Junta Médica Oficial','Agendado','Alta'],
-  [ 15,'09:00','11:00',2,'Atividade externa','Reunião no conselho fiscal','Sede do Conselho','Agendado','Média'],
-  [ 18,'08:30','10:00',7,'Consulta médica','Consulta com clínico geral','Clínica Saúde Ocupacional','Agendado','Baixa'],
-  [ 20,'13:00','17:00',5,'Atividade externa','Workshop de segurança da informação','Hotel Central','Agendado','Média'],
-  [ 22,'09:00','10:00',6,'Exame','Exame de sangue — check-up','Laboratório Central','Agendado','Baixa'],
-  [ 25,'10:00','12:00',0,'Atividade externa','Reunião de planejamento com a Secretaria','Secretaria de Administração','Agendado','Alta'],
-  [ 28,'15:00','16:00',4,'Consulta médica','Consulta com nutricionista','Clínica Nutri','Agendado','Baixa']
-];
+/* Nenhum agendamento inicial */
+const RAW = [];
 
 /* =========================================================
    2. HELPERS
@@ -579,7 +532,7 @@ const state = {
   mes: new Date(HOJE.getFullYear(), HOJE.getMonth(), 1),
   diaSel: HOJE_ISO,
   detalheId: null,
-  servidorPendente: null,   /* nome aguardando confirmação de exclusão */
+  servidorPendente: null,
   filtros: {colaborador:'', setor:'', tipo:'', status:'', busca:''}
 };
 
@@ -783,7 +736,6 @@ function renderTudo(){
   renderTabela();
   renderEquipe();
 
-  // botão de exclusão total reflete a quantidade
   const btn = $('#btnExcluirTodos');
   btn.textContent = `🗑 Excluir todos (${AGENDAMENTOS.length})`;
   btn.disabled = AGENDAMENTOS.length === 0;
@@ -831,6 +783,10 @@ function fecharDetalhe(){
    11. FORMULÁRIO NOVO AGENDAMENTO
    ========================================================= */
 function abrirNovo(){
+  if (!COLABORADORES.length){
+    toast('Cadastre um servidor antes de criar agendamentos.');
+    return;
+  }
   $('#formNovo').reset();
   $('#nData').value = HOJE_ISO;
   $('#nInicio').value = '09:00';
@@ -841,28 +797,23 @@ function abrirNovo(){
 function fecharNovo(){ $('#modalNovo').hidden = true; }
 
 /* =========================================================
-   12. CADASTRAR SERVIDOR
+   12. CADASTRAR / EXCLUIR SERVIDOR
    ========================================================= */
 function setoresUnicos(){
   return [...new Set(COLABORADORES.map(c => c.setor))]
     .sort((a,b) => a.localeCompare(b, 'pt-BR'));
 }
 
-/* Reconstrói todos os selects/datalists de colaboradores e setores */
 function atualizarColaboradores(){
-  // filtro: colaborador
   preencherSelect($('#fColaborador'), COLABORADORES.map(c => c.nome), 'Todos', state.filtros.colaborador);
-  // filtro: setor
   preencherSelect($('#fSetor'), setoresUnicos(), 'Todos', state.filtros.setor);
 
-  // formulário de novo agendamento
   const atualN = $('#nColaborador').value;
   $('#nColaborador').innerHTML = COLABORADORES.length
     ? COLABORADORES.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} — ${esc(c.setor)}</option>`).join('')
     : `<option value="">Nenhum servidor cadastrado</option>`;
   if (COLABORADORES.some(c => c.nome === atualN)) $('#nColaborador').value = atualN;
 
-  // sugestões de setor no cadastro
   $('#listaSetores').innerHTML = setoresUnicos()
     .map(s => `<option value="${esc(s)}"></option>`).join('');
 }
@@ -882,7 +833,6 @@ function fecharExcluirServidor(){
   state.servidorPendente = null;
 }
 
-/* ---- lista de servidores no modal de exclusão ---- */
 function renderServidoresModal(){
   const cont = $('#listaServidores');
 
@@ -928,7 +878,6 @@ function renderServidoresModal(){
   }).join('');
 }
 
-/* ---- exclusão efetiva ---- */
 function excluirServidor(nome){
   const colab = COLABORADORES.find(c => c.nome === nome);
   if (!colab) return;
@@ -938,11 +887,8 @@ function excluirServidor(nome){
   COLABORADORES = COLABORADORES.filter(c => c.nome !== nome);
   AGENDAMENTOS  = AGENDAMENTOS.filter(a => a.colaborador !== nome);
 
-  // ajusta filtros que apontavam para o servidor/setor removido
   if (state.filtros.colaborador === nome) state.filtros.colaborador = '';
   if (state.filtros.setor && !setoresUnicos().includes(state.filtros.setor)) state.filtros.setor = '';
-
-  // fecha detalhe se o agendamento aberto foi removido
   if (state.detalheId && !AGENDAMENTOS.some(a => a.id === state.detalheId)) fecharDetalhe();
 
   state.servidorPendente = null;
@@ -999,17 +945,14 @@ function preencherSelect(el, itens, rotuloTodos, valorAtual){
 }
 
 function init(){
-  // selects fixos
   preencherSelect($('#fTipo'), TIPOS, 'Todos');
   preencherSelect($('#fStatus'), STATUSES, 'Todos');
   $('#nTipo').innerHTML = TIPOS.map(t => `<option>${esc(t)}</option>`).join('');
   $('#nPrioridade').innerHTML = PRIORIDADES.map(p => `<option${p === 'Média' ? ' selected' : ''}>${p}</option>`).join('');
   $('#nStatus').innerHTML = STATUSES.map(s => `<option>${esc(s)}</option>`).join('');
 
-  // selects dinâmicos (colaboradores / setores)
   atualizarColaboradores();
 
-  // filtros
   const mapaFiltros = {
     fColaborador:'colaborador', fSetor:'setor', fTipo:'tipo', fStatus:'status', fBusca:'busca'
   };
@@ -1027,7 +970,6 @@ function init(){
     renderTudo();
   });
 
-  // abas
   $$('.aba').forEach(b => b.addEventListener('click', () => {
     state.view = b.dataset.view;
     $$('.aba').forEach(x => x.classList.toggle('ativa', x === b));
@@ -1036,7 +978,6 @@ function init(){
     $('#view-equipe').hidden     = state.view !== 'equipe';
   }));
 
-  // navegação do calendário
   $('#calPrev').addEventListener('click', () => {
     state.mes = new Date(state.mes.getFullYear(), state.mes.getMonth() - 1, 1);
     renderCalendario();
@@ -1052,7 +993,6 @@ function init(){
     renderListaDia();
   });
 
-  // clique no calendário
   $('#calGrid').addEventListener('click', e => {
     const chip = e.target.closest('.chip');
     if (chip){ abrirDetalhe(Number(chip.dataset.id)); return; }
@@ -1060,19 +1000,16 @@ function init(){
     if (cel){ state.diaSel = cel.dataset.data; renderCalendario(); renderListaDia(); }
   });
 
-  // lista do dia
   $('#listaDia').addEventListener('click', e => {
     const item = e.target.closest('.item-linha');
     if (item) abrirDetalhe(Number(item.dataset.id));
   });
 
-  // tabela
   $('#tabelaCorpo').addEventListener('click', e => {
     const tr = e.target.closest('tr[data-id]');
     if (tr) abrirDetalhe(Number(tr.dataset.id));
   });
 
-  // ações do modal de detalhe
   $('#detalheAcoes').addEventListener('click', e => {
     const b = e.target.closest('[data-acao]');
     if (!b) return;
@@ -1099,7 +1036,6 @@ function init(){
     if (e.target.id === 'modalDetalhe') fecharDetalhe();
   });
 
-  // novo agendamento
   $('#btnNovo').addEventListener('click', abrirNovo);
   $('#fecharNovo').addEventListener('click', fecharNovo);
   $('#cancelarNovo').addEventListener('click', fecharNovo);
@@ -1136,7 +1072,7 @@ function init(){
     toast('Agendamento criado com sucesso.');
   });
 
-  // ---- CADASTRAR SERVIDOR ----
+  // CADASTRAR SERVIDOR
   $('#btnCadastrarServidor').addEventListener('click', () => {
     $('#formServidor').reset();
     $('#modalServidor').hidden = false;
@@ -1166,7 +1102,7 @@ function init(){
     toast(`Servidor "${nome}" cadastrado.`);
   });
 
-  // ---- EXCLUIR SERVIDOR ----
+  // EXCLUIR SERVIDOR
   $('#btnExcluirServidor').addEventListener('click', abrirServidor);
   $('#fecharExcluirServidor').addEventListener('click', fecharExcluirServidor);
   $('#cancelarExcluirServidor').addEventListener('click', fecharExcluirServidor);
@@ -1175,9 +1111,9 @@ function init(){
   });
 
   $('#listaServidores').addEventListener('click', e => {
-    const btnExcluir    = e.target.closest('[data-excluir]');
-    const btnConfirmar  = e.target.closest('[data-confirmar]');
-    const btnCancelar   = e.target.closest('[data-cancelar]');
+    const btnExcluir   = e.target.closest('[data-excluir]');
+    const btnConfirmar = e.target.closest('[data-confirmar]');
+    const btnCancelar  = e.target.closest('[data-cancelar]');
 
     if (btnExcluir){
       state.servidorPendente = btnExcluir.dataset.excluir;
@@ -1194,7 +1130,7 @@ function init(){
     }
   });
 
-  // ---- EXCLUIR TODOS (senha) ----
+  // EXCLUIR TODOS (senha)
   $('#btnExcluirTodos').addEventListener('click', abrirSenha);
   $('#fecharSenha').addEventListener('click', fecharSenha);
   $('#cancelarSenha').addEventListener('click', fecharSenha);
@@ -1219,10 +1155,8 @@ function init(){
     }
   });
 
-  // exportar
   $('#btnExportar').addEventListener('click', exportarCSV);
 
-  // Esc fecha modais
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape'){
       if (!$('#modalDetalhe').hidden) fecharDetalhe();
