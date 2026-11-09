@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agenda DA — Atividades externas e consultas médicas</title>
+<style>
+  :root{
+    --bg:#eef2f7; --card:#fff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --brand:#1d4ed8; --brand-soft:#e8efff;
+    --externa:#2563eb; --consulta:#16a34a; --exame:#7c3aed; --pericia:#ea580c;
+    --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.06),0 10px 26px -14px rgba(15,23,42,.25);
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 20px 70px}
+
+  /* ---------- TOPO ---------- */
+  .topbar{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+    background:linear-gradient(135deg,#12275c,#1d4ed8);color:#fff;border-radius:18px;padding:20px 22px;box-shadow:var(--shadow)}
+  .brand{display:flex;gap:14px;align-items:center}
+  .logo{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+    display:grid;place-items:center;font-weight:800;font-size:16px;letter-spacing:.5px}
+  .topbar h1{font-size:19px;margin:0;letter-spacing:-.01em}
+  .topbar p{margin:3px 0 0;font-size:13px;color:#c9d8ff}
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13px;font-weight:600;
+    padding:9px 14px;border-radius:10px;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn:hover{background:#f8fafc}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:#1a45bd}
+  .btn.ghost{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35);color:#fff}
+  .btn.ghost:hover{background:rgba(255,255,255,.24)}
+  .btn.ghost.danger-ghost{background:rgba(220,38,38,.22);border-color:rgba(248,113,113,.55);color:#fecaca}
+  .btn.ghost.danger-ghost:hover{background:rgba(220,38,38,.36)}
+  .btn.danger{background:#dc2626;border-color:#dc2626;color:#fff}
+  .btn.danger:hover{background:#b91c1c;border-color:#b91c1c}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+
+  /* ---------- KPIs ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin:18px 0 14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .kpi .val{font-size:27px;font-weight:800;margin-top:6px;letter-spacing:-.02em;line-height:1}
+  .kpi .sub{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .kpi.accent .val{color:var(--brand)} .kpi.ok .val{color:#16a34a} .kpi.warn .val{color:#dc2626} .kpi.mid .val{color:#d97706}
+
+  /* ---------- FILTROS ---------- */
+  .painel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:14px 16px}
+  .campo label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+  select,input[type=text],input[type=date],input[type=time],input[type=password],textarea{width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;transition:.15s}
+  select:focus,input:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(29,78,216,.12)}
+  .filtros .limpar{display:flex;align-items:flex-end}
+
+  /* ---------- ABAS ---------- */
+  .abas{display:flex;gap:8px;margin:18px 0 12px;flex-wrap:wrap}
+  .aba{border:1px solid var(--line);background:#fff;color:var(--muted);font-weight:700;font-size:13px;
+    padding:9px 16px;border-radius:999px;cursor:pointer;font-family:inherit;transition:.15s}
+  .aba:hover{color:var(--ink)}
+  .aba.ativa{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 6px 16px -8px rgba(29,78,216,.9)}
+
+  /* ---------- CALENDÁRIO ---------- */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);gap:12px;flex-wrap:wrap}
+  .cal-head h2{margin:0;font-size:16px;letter-spacing:-.01em}
+  .cal-nav{display:flex;gap:8px;align-items:center}
+  .cal-scroll{overflow-x:auto}
+  .cal{min-width:780px}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);background:#f8fafc;border-bottom:1px solid var(--line)}
+  .dow div{padding:9px 6px;text-align:center;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .dia{min-height:106px;padding:6px 6px 7px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:background .12s}
+  .dia:nth-child(7n){border-right:0}
+  .dia:nth-last-child(-n+7){border-bottom:0}
+  .dia:hover{background:#f8fafc}
+  .dia.fora{background:#fbfcfe}
+  .dia.fora .dia-num span:first-child{color:#cbd5e1}
+  .dia.hoje{background:#eff6ff;box-shadow:inset 0 0 0 2px #bfdbfe}
+  .dia.sel{box-shadow:inset 0 0 0 2px var(--brand);background:#f5f8ff}
+  .dia-num{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--muted);padding:1px 2px 2px}
+  .dia.hoje .dia-num span:first-child{color:var(--brand)}
+  .cnt{font-size:10px;font-weight:700;background:#e2e8f0;color:#475569;border-radius:999px;padding:1px 6px}
+  .dia.hoje .cnt{background:var(--brand);color:#fff}
+  .chips{display:flex;flex-direction:column;gap:3px;overflow:hidden}
+  .chip{display:block;width:100%;text-align:left;font-family:inherit;font-size:11px;line-height:1.35;font-weight:600;
+    border:0;border-left:3px solid #94a3b8;background:#f8fafc;color:#0f172a;border-radius:5px;padding:2px 5px;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip:hover{filter:brightness(.95)}
+  .chip.cancelado{opacity:.5;text-decoration:line-through}
+  .chip.t-atividade{background:#eff6ff;border-color:var(--externa);color:#1e3a8a}
+  .chip.t-consulta{background:#ecfdf5;border-color:var(--consulta);color:#14532d}
+  .chip.t-exame{background:#f5f3ff;border-color:var(--exame);color:#4c1d95}
+  .chip.t-pericia{background:#fff7ed;border-color:var(--pericia);color:#7c2d12}
+  .mais{font-size:10.5px;font-weight:700;color:var(--muted);padding-left:3px}
+
+  .legenda{display:flex;gap:16px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);font-weight:600}
+  .legenda span{display:inline-flex;align-items:center;gap:6px}
+  .ponto{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .ponto.t-atividade{background:var(--externa)} .ponto.t-consulta{background:var(--consulta)}
+  .ponto.t-exame{background:var(--exame)} .ponto.t-pericia{background:var(--pericia)}
+
+  /* ---------- LISTA DO DIA ---------- */
+  .dia-lista{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .dia-lista h3{margin:0 0 12px;font-size:14.5px}
+  .item-linha{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+  .item-linha:first-of-type{border-top:0}
+  .item-linha:hover .item-ass{color:var(--brand)}
+  .item-hora{font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:800;color:var(--muted);min-width:96px}
+  .item-ass{font-size:13.5px;font-weight:600}
+  .item-meta{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .vazio{padding:22px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ---------- TABELA ---------- */
+  .tabela-top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);gap:10px;flex-wrap:wrap}
+  .tabela-top h2{margin:0;font-size:15px}
+  .tabela-top .info{font-size:12.5px;color:var(--muted);font-weight:600}
+  .table-wrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:940px;font-size:13px}
+  th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    background:#f8fafc;padding:10px 14px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#f8fafc}
+  td.ass{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .s-agendado{background:#f1f5f9;color:#475569}
+  .s-confirmado{background:#e0ecff;color:#1d4ed8}
+  .s-realizado{background:#dcfce7;color:#15803d}
+  .s-cancelado{background:#fee2e2;color:#b91c1c}
+  .s-reagendado{background:#fef3c7;color:#b45309}
+  .tipo-tag{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+
+  /* ---------- EQUIPE ---------- */
+  .equipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .pessoa{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .pessoa-top{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  .avatar{width:42px;height:42px;border-radius:12px;background:var(--brand-soft);color:var(--brand);
+    display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .pessoa h4{margin:0;font-size:14px}
+  .pessoa .setor{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .stats{display:flex;gap:8px;margin-bottom:12px}
+  .stat{flex:1;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+  .stat b{display:block;font-size:16px;letter-spacing:-.02em}
+  .stat span{font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .prox{font-size:12.5px;background:#f5f8ff;border:1px solid #dbe6ff;border-radius:10px;padding:9px 11px;color:#1e3a8a;font-weight:600}
+
+  /* ---------- MODAIS ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;padding:18px;z-index:50;backdrop-filter:blur(2px)}
+  .modal{background:#fff;border-radius:16px;box-shadow:0 30px 60px -20px rgba(15,23,42,.5);width:min(560px,100%);
+    max-height:90vh;overflow:auto;animation:pop .16s ease-out}
+  @keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+  .modal-head h3{margin:0;font-size:16px;letter-spacing:-.01em}
+  .modal-head .sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .fechar{border:0;background:#f1f5f9;width:32px;height:32px;border-radius:9px;font-size:17px;cursor:pointer;color:var(--muted);line-height:1}
+  .fechar:hover{background:#e2e8f0;color:var(--ink)}
+  .modal-body{padding:16px 20px}
+  .modal-foot{padding:14px 20px 18px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line)}
+  .dl{display:grid;grid-template-columns:130px 1fr;gap:10px 14px;font-size:13.5px}
+  .dl dt{color:var(--muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+  .dl dd{margin:0;font-weight:600}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form-grid .full{grid-column:1/-1}
+  @media(max-width:520px){.form-grid{grid-template-columns:1fr}.dl{grid-template-columns:1fr}.dl dt{padding-top:8px}}
+
+  /* ---------- LISTA DE SERVIDORES ---------- */
+  .srv-row{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .srv-row:first-child{border-top:0}
+  .srv-row.pendente{background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:11px 13px;margin:6px 0}
+  .srv-avatar{width:36px;height:36px;border-radius:10px;background:var(--brand-soft);color:var(--brand);
+    display:grid;place-items:center;font-weight:800;font-size:12.5px;flex-shrink:0}
+  .srv-info{flex:1;min-width:0}
+  .srv-nome{font-size:13.5px;font-weight:700}
+  .srv-meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .srv-acoes{display:flex;gap:6px;flex-shrink:0}
+
+  /* ---------- TOAST ---------- */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:#0f172a;color:#fff;
+    padding:11px 18px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:0 14px 30px -12px rgba(15,23,42,.6);
+    opacity:0;pointer-events:none;transition:.22s;z-index:80;max-width:90vw;text-align:center}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOPO -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">DA</div>
+      <div>
+        <h1>Agenda DA — Atividades externas e consultas médicas</h1>
+        <p>Diretoria Administrativa · controle de saídas, consultas, exames e perícias da equipe</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnExportar">⤓ Exportar CSV</button>
+      <button class="btn ghost" id="btnCadastrarServidor">＋ Cadastrar servidor</button>
+      <button class="btn ghost danger-ghost" id="btnExcluirServidor">👤 Excluir servidor</button>
+      <button class="btn danger" id="btnExcluirTodos">🗑 Excluir todos</button>
+      <button class="btn primary" id="btnNovo">+ Novo agendamento</button>
+    </div>
+  </header>
+
+  <!-- KPIs -->
+  <section class="kpis" id="kpis"></section>
+
+  <!-- FILTROS -->
+  <section class="painel">
+    <div class="filtros">
+      <div class="campo">
+        <label for="fColaborador">Colaborador</label>
+        <select id="fColaborador"></select>
+      </div>
+      <div class="campo">
+        <label for="fSetor">Setor / Divisão</label>
+        <select id="fSetor"></select>
+      </div>
+      <div class="campo">
+        <label for="fTipo">Tipo</label>
+        <select id="fTipo"></select>
+      </div>
+      <div class="campo">
+        <label for="fStatus">Status</label>
+        <select id="fStatus"></select>
+      </div>
+      <div class="campo">
+        <label for="fBusca">Buscar</label>
+        <input type="text" id="fBusca" placeholder="Assunto, local, pessoa…">
+      </div>
+      <div class="campo limpar">
+        <button class="btn" id="btnLimpar" style="width:100%">Limpar filtros</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABAS -->
+  <nav class="abas">
+    <button class="aba ativa" data-view="calendario">📅 Calendário</button>
+    <button class="aba" data-view="tabela">☰ Tabela</button>
+    <button class="aba" data-view="equipe">👥 Por colaborador</button>
+  </nav>
+
+  <!-- VISÃO CALENDÁRIO -->
+  <section id="view-calendario">
+    <div class="painel">
+      <div class="cal-head">
+        <h2 id="calTitulo">—</h2>
+        <div class="cal-nav">
+          <button class="btn sm" id="calHoje">Hoje</button>
+          <button class="btn sm" id="calPrev">‹ Anterior</button>
+          <button class="btn sm" id="calNext">Próximo ›</button>
+        </div>
+      </div>
+      <div class="cal-scroll">
+        <div class="cal">
+          <div class="dow">
+            <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+          </div>
+          <div class="grid" id="calGrid"></div>
+        </div>
+      </div>
+      <div class="legenda">
+        <span><i class="ponto t-atividade"></i> Atividade externa</span>
+        <span><i class="ponto t-consulta"></i> Consulta médica</span>
+        <span><i class="ponto t-exame"></i> Exame</span>
+        <span><i class="ponto t-pericia"></i> Perícia</span>
+      </div>
+    </div>
+
+    <div class="dia-lista" id="listaDia"></div>
+  </section>
+
+  <!-- VISÃO TABELA -->
+  <section id="view-tabela" hidden>
+    <div class="painel">
+      <div class="tabela-top">
+        <h2>Compromissos</h2>
+        <span class="info" id="tabelaInfo"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th><th>Horário</th><th>Colaborador</th><th>Setor</th>
+              <th>Tipo</th><th>Compromisso</th><th>Local / Prestador</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaCorpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISÃO EQUIPE -->
+  <section id="view-equipe" hidden>
+    <div class="equipe" id="equipeGrid"></div>
+  </section>
+
+</div>
+
+<!-- MODAL DETALHE -->
+<div class="overlay" id="modalDetalhe" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="detalheTitulo">—</h3>
+        <div class="sub" id="detalheSub"></div>
+      </div>
+      <button class="fechar" data-acao="fechar">×</button>
+    </div>
+    <div class="modal-body" id="detalheCorpo"></div>
+    <div class="modal-foot" id="detalheAcoes"></div>
+  </div>
+</div>
+
+<!-- MODAL NOVO AGENDAMENTO -->
+<div class="overlay" id="modalNovo" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Novo agendamento</h3>
+        <div class="sub">Atividade externa, consulta médica, exame ou perícia</div>
+      </div>
+      <button class="fechar" id="fecharNovo">×</button>
+    </div>
+    <form id="formNovo">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="campo full">
+            <label for="nColaborador">Colaborador *</label>
+            <select id="nColaborador" required></select>
+          </div>
+          <div class="campo">
+            <label for="nTipo">Tipo *</label>
+            <select id="nTipo" required></select>
+          </div>
+          <div class="campo">
+            <label for="nPrioridade">Prioridade</label>
+            <select id="nPrioridade"></select>
+          </div>
+          <div class="campo full">
+            <label for="nAssunto">Assunto / Descrição *</label>
+            <input type="text" id="nAssunto" required placeholder="Ex.: Consulta ocupacional — ASO periódico">
+          </div>
+          <div class="campo full">
+            <label for="nLocal">Local / Prestador</label>
+            <input type="text" id="nLocal" placeholder="Clínica, órgão, endereço…">
+          </div>
+          <div class="campo">
+            <label for="nData">Data *</label>
+            <input type="date" id="nData" required>
+          </div>
+          <div class="campo">
+            <label for="nStatus">Status</label>
+            <select id="nStatus"></select>
+          </div>
+          <div class="campo">
+            <label for="nInicio">Hora início *</label>
+            <input type="time" id="nInicio" required value="09:00">
+          </div>
+          <div class="campo">
+            <label for="nFim">Hora fim</label>
+            <input type="time" id="nFim" value="10:00">
+          </div>
+          <div class="campo full">
+            <label for="nObs">Observações</label>
+            <textarea id="nObs" rows="2" placeholder="Informações complementares…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="submit" class="btn primary">Salvar agendamento</button>
+        <button type="button" class="btn" id="cancelarNovo">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CADASTRAR SERVIDOR -->
+<div class="overlay" id="modalServidor" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Cadastrar servidor</h3>
+        <div class="sub">Adiciona um novo integrante à equipe da Diretoria Administrativa</div>
+      </div>
+      <button class="fechar" id="fecharServidor">×</button>
+    </div>
+    <form id="formServidor">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="campo full">
+            <label for="sNome">Nome completo *</label>
+            <input type="text" id="sNome" required placeholder="Ex.: Maria Silva Santos">
+          </div>
+          <div class="campo full">
+            <label for="sSetor">Setor / Divisão *</label>
+            <input type="text" id="sSetor" list="listaSetores" required placeholder="Ex.: Recursos Humanos">
+            <datalist id="listaSetores"></datalist>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="submit" class="btn primary">Cadastrar servidor</button>
+        <button type="button" class="btn" id="cancelarServidor">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EXCLUIR SERVIDOR -->
+<div class="overlay" id="modalExcluirServidor" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Excluir servidor</h3>
+        <div class="sub">Ao excluir um servidor, os agendamentos dele também são removidos</div>
+      </div>
+      <button class="fechar" id="fecharExcluirServidor">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="listaServidores"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="cancelarExcluirServidor">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SENHA (EXCLUSÃO TOTAL) -->
+<div class="overlay" id="modalSenha" hidden>
+  <div class="modal" style="width:min(430px,100%)">
+    <div class="modal-head">
+      <div>
+        <h3>Confirmar exclusão</h3>
+        <div class="sub">Esta ação removerá todos os agendamentos cadastrados</div>
+      </div>
+      <button class="fechar" id="fecharSenha">×</button>
+    </div>
+    <form id="formSenha">
+      <div class="modal-body">
+        <div class="campo">
+          <label for="senhaInput">Senha de administrador</label>
+          <input type="password" id="senhaInput" autocomplete="off" placeholder="Digite a senha">
+          <div id="senhaErro" style="color:#dc2626;font-size:12.5px;font-weight:700;margin-top:7px" hidden>
+            Senha incorreta. Tente novamente.
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="submit" class="btn danger">Excluir todos os agendamentos</button>
+        <button type="button" class="btn" id="cancelarSenha">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   1. DADOS
+   ========================================================= */
+let COLABORADORES = [
+  {nome:'Ana Beatriz Sousa',   setor:'Gabinete da Diretoria'},
+  {nome:'Carlos Eduardo Lima', setor:'Recursos Humanos'},
+  {nome:'Fernanda Rocha',      setor:'Finanças'},
+  {nome:'João Pedro Alves',    setor:'Compras e Licitações'},
+  {nome:'Mariana Castro',      setor:'Patrimônio e Logística'},
+  {nome:'Rafael Nunes',        setor:'Tecnologia da Informação'},
+  {nome:'Juliana Prado',       setor:'Secretaria Executiva'},
+  {nome:'Bruno Tavares',       setor:'Protocolo e Arquivo'}
+];
+
+const TIPOS        = ['Atividade externa','Consulta médica','Exame','Perícia'];
+const STATUSES     = ['Agendado','Confirmado','Realizado','Cancelado','Reagendado'];
+const PRIORIDADES  = ['Alta','Média','Baixa'];
+
+const SLUG_TIPO = {'Atividade externa':'atividade','Consulta médica':'consulta','Exame':'exame','Perícia':'pericia'};
+const SLUG_STATUS = {'Agendado':'agendado','Confirmado':'confirmado','Realizado':'realizado','Cancelado':'cancelado','Reagendado':'reagendado'};
+
+/* Senha para ações administrativas (excluir todos os agendamentos) */
+const SENHA_ADMIN = 'agendamentos';
+
+/* [offsetDias, inicio, fim, idxColaborador, tipo, assunto, local, status, prioridade] */
+const RAW = [
+  [-12,'09:00','12:00',3,'Atividade externa','Reunião com fornecedor de material de escritório','Fornecedor XYZ — Av. Paulista, 1200','Realizado','Média'],
+  [-10,'14:00','16:00',1,'Consulta médica','Consulta ocupacional — ASO periódico','Clínica Saúde Ocupacional','Realizado','Alta'],
+  [ -8,'08:30','10:00',6,'Atividade externa','Visita ao arquivo central','Arquivo Central — Barra Funda','Realizado','Baixa'],
+  [ -6,'10:00','11:30',2,'Exame','Exames laboratoriais de rotina','Laboratório Central','Realizado','Média'],
+  [ -5,'15:00','16:00',4,'Consulta médica','Avaliação com oftalmologista','Clínica Visão','Cancelado','Média'],
+  [ -3,'09:00','10:30',0,'Atividade externa','Reunião no Ministério — prestação de contas','Esplanada dos Ministérios, Bloco C','Realizado','Alta'],
+  [ -2,'13:30','17:00',5,'Atividade externa','Treinamento de sistema no fornecedor','Sede do fornecedor — Santo Amaro','Reagendado','Média'],
+  [ -1,'08:00','09:00',7,'Perícia','Perícia médica — servidor','Junta Médica Oficial','Realizado','Alta'],
+  [  0,'09:00','10:00',1,'Consulta médica','Consulta clínica — acompanhamento','Clínica Saúde Ocupacional','Confirmado','Alta'],
+  [  0,'14:00','16:00',2,'Atividade externa','Assinatura de contrato em cartório','Cartório do 5º Ofício — Centro','Agendado','Alta'],
+  [  0,'10:30','11:30',6,'Exame','Exame de imagem — ultrassonografia','Centro Diagnóstico Imagem','Confirmado','Média'],
+  [  1,'08:30','12:00',0,'Atividade externa','Audiência no Tribunal de Contas','TCE — Sede','Agendado','Alta'],
+  [  1,'15:00','16:00',4,'Consulta médica','Consulta dermatológica','Clínica Derma','Agendado','Baixa'],
+  [  2,'09:00','11:00',3,'Atividade externa','Cotação de preços — mercado municipal','Mercado Municipal','Agendado','Média'],
+  [  2,'13:00','14:00',7,'Consulta médica','Consulta com cardiologista','Instituto do Coração','Confirmado','Alta'],
+  [  3,'10:00','12:00',5,'Atividade externa','Visita técnica a data center','Data Center — Tamboré','Agendado','Média'],
+  [  3,'08:00','09:00',1,'Exame','Coleta de sangue — ASO','Laboratório Central','Agendado','Média'],
+  [  4,'14:30','16:30',2,'Atividade externa','Reunião com banco — renegociação','Agência bancária — Centro','Agendado','Média'],
+  [  4,'09:00','10:00',6,'Consulta médica','Avaliação odontológica','Odonto Empresa','Confirmado','Baixa'],
+  [  5,'11:00','12:00',0,'Perícia','Perícia administrativa','Junta Médica Oficial','Agendado','Alta'],
+  [  5,'15:00','17:00',4,'Atividade externa','Inventário em unidade descentralizada','Unidade Regional Norte','Agendado','Baixa'],
+  [  6,'08:00','10:00',3,'Consulta médica','Consulta ortopédica','Clínica Orto','Agendado','Média'],
+  [  6,'13:00','15:00',1,'Atividade externa','Entrevistas em feira de recrutamento','Centro de Convenções','Agendado','Média'],
+  [  7,'09:30','11:00',7,'Atividade externa','Protocolo de documentos em órgão externo','Órgão Federal — Setor Bancário Sul','Agendado','Baixa'],
+  [  8,'10:00','11:00',2,'Exame','Exame audiométrico','Clínica Saúde Ocupacional','Agendado','Média'],
+  [  8,'14:00','16:00',5,'Atividade externa','Reunião de alinhamento com fornecedor de TI','Fornecedor — Vila Olímpia','Agendado','Média'],
+  [ 10,'09:00','12:00',0,'Atividade externa','Seminário de gestão pública','Escola de Governo','Agendado','Baixa'],
+  [ 10,'15:00','16:00',6,'Consulta médica','Retorno clínico','Clínica Saúde Ocupacional','Agendado','Média'],
+  [ 12,'08:00','09:30',4,'Consulta médica','Consulta com endocrinologista','Clínica Endo','Agendado','Média'],
+  [ 13,'10:00','12:00',3,'Atividade externa','Vistoria de bens em depósito','Depósito Central','Agendado','Baixa'],
+  [ 14,'14:00','15:00',1,'Perícia','Perícia médica — readaptação','Junta Médica Oficial','Agendado','Alta'],
+  [ 15,'09:00','11:00',2,'Atividade externa','Reunião no conselho fiscal','Sede do Conselho','Agendado','Média'],
+  [ 18,'08:30','10:00',7,'Consulta médica','Consulta com clínico geral','Clínica Saúde Ocupacional','Agendado','Baixa'],
+  [ 20,'13:00','17:00',5,'Atividade externa','Workshop de segurança da informação','Hotel Central','Agendado','Média'],
+  [ 22,'09:00','10:00',6,'Exame','Exame de sangue — check-up','Laboratório Central','Agendado','Baixa'],
+  [ 25,'10:00','12:00',0,'Atividade externa','Reunião de planejamento com a Secretaria','Secretaria de Administração','Agendado','Alta'],
+  [ 28,'15:00','16:00',4,'Consulta médica','Consulta com nutricionista','Clínica Nutri','Agendado','Baixa']
+];
+
+/* =========================================================
+   2. HELPERS
+   ========================================================= */
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+const HOJE = new Date(); HOJE.setHours(0,0,0,0);
+const HOJE_ISO = ymd(HOJE);
+
+function diaOffset(n){ const d = new Date(HOJE); d.setDate(d.getDate()+n); return ymd(d); }
+function fmtData(iso){ const [a,m,d] = iso.split('-'); return `${d}/${m}/${a}`; }
+function fmtDataLonga(iso){
+  const d = new Date(iso+'T12:00:00');
+  const s = d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slugTipo = t => SLUG_TIPO[t] || 'outro';
+const slugStatus = s => SLUG_STATUS[s] || 'agendado';
+
+function toast(msg){
+  let el = $('#toast');
+  if (!el){ el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; document.body.appendChild(el); }
+  el.textContent = msg;
+  requestAnimationFrame(() => el.classList.add('on'));
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+/* =========================================================
+   3. ESTADO
+   ========================================================= */
+let seq = 1;
+let AGENDAMENTOS = RAW.map(r => {
+  const c = COLABORADORES[r[3]];
+  return {
+    id: seq++,
+    data: diaOffset(r[0]),
+    inicio: r[1], fim: r[2],
+    colaborador: c.nome, setor: c.setor,
+    tipo: r[4], assunto: r[5], local: r[6],
+    status: r[7], prioridade: r[8], obs: ''
+  };
+});
+
+const state = {
+  view: 'calendario',
+  mes: new Date(HOJE.getFullYear(), HOJE.getMonth(), 1),
+  diaSel: HOJE_ISO,
+  detalheId: null,
+  servidorPendente: null,   /* nome aguardando confirmação de exclusão */
+  filtros: {colaborador:'', setor:'', tipo:'', status:'', busca:''}
+};
+
+/* =========================================================
+   4. FILTRAGEM
+   ========================================================= */
+function dadosFiltrados(){
+  const q = state.filtros.busca.trim().toLowerCase();
+  return AGENDAMENTOS.filter(a =>
+    (!state.filtros.colaborador || a.colaborador === state.filtros.colaborador) &&
+    (!state.filtros.setor       || a.setor       === state.filtros.setor) &&
+    (!state.filtros.tipo        || a.tipo        === state.filtros.tipo) &&
+    (!state.filtros.status      || a.status      === state.filtros.status) &&
+    (!q || (a.assunto + ' ' + a.local + ' ' + a.colaborador + ' ' + a.setor).toLowerCase().includes(q))
+  ).sort((x,y) => (x.data + x.inicio).localeCompare(y.data + y.inicio));
+}
+
+/* =========================================================
+   5. RENDER — KPIs
+   ========================================================= */
+function renderKPIs(){
+  const d = dadosFiltrados();
+  const em7 = diaOffset(7);
+  const mesAtual = HOJE_ISO.slice(0,7);
+  const ativo = a => a.status !== 'Cancelado';
+
+  const hoje      = d.filter(a => a.data === HOJE_ISO && ativo(a)).length;
+  const proximos  = d.filter(a => a.data > HOJE_ISO && a.data <= em7 && ativo(a)).length;
+  const noMes     = d.filter(a => a.data.slice(0,7) === mesAtual && ativo(a)).length;
+  const consultas = d.filter(a => a.tipo === 'Consulta médica' && (a.status === 'Agendado' || a.status === 'Confirmado')).length;
+  const cancelados= d.filter(a => a.status === 'Cancelado').length;
+
+  const vencidos  = d.filter(a => a.data <= HOJE_ISO);
+  const realizados= vencidos.filter(a => a.status === 'Realizado').length;
+  const taxa      = vencidos.length ? Math.round(realizados / vencidos.length * 100) : 0;
+
+  const cards = [
+    {cls:'accent', lbl:'Hoje',              val: hoje,       sub: fmtData(HOJE_ISO)},
+    {cls:'accent', lbl:'Próximos 7 dias',   val: proximos,   sub:'compromissos ativos'},
+    {cls:'',       lbl:'No mês',            val: noMes,      sub:'mês corrente'},
+    {cls:'ok',     lbl:'Consultas médicas', val: consultas,  sub:'agendadas / confirmadas'},
+    {cls:'',       lbl:'Taxa de realização',val: taxa + '%', sub:`${realizados} de ${vencidos.length} já vencidos`},
+    {cls:'warn',   lbl:'Cancelados',        val: cancelados, sub:'no total'}
+  ];
+
+  $('#kpis').innerHTML = cards.map(c => `
+    <div class="kpi ${c.cls}">
+      <div class="lbl">${c.lbl}</div>
+      <div class="val">${c.val}</div>
+      <div class="sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   6. RENDER — CALENDÁRIO
+   ========================================================= */
+function renderCalendario(){
+  const d = dadosFiltrados();
+  const porDia = {};
+  d.forEach(a => { (porDia[a.data] = porDia[a.data] || []).push(a); });
+
+  const y = state.mes.getFullYear();
+  const m = state.mes.getMonth();
+  const primeiro = new Date(y, m, 1);
+  const inicioGrid = new Date(y, m, 1 - primeiro.getDay());
+
+  const nomeMes = primeiro.toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+  $('#calTitulo').textContent = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+
+  let html = '';
+  for (let i = 0; i < 42; i++){
+    const cur = new Date(inicioGrid);
+    cur.setDate(inicioGrid.getDate() + i);
+    const key = ymd(cur);
+    const fora = cur.getMonth() !== m;
+    const evs = (porDia[key] || []).slice().sort((a,b) => a.inicio.localeCompare(b.inicio));
+    const visiveis = evs.slice(0, 3);
+
+    const chips = visiveis.map(a => `
+      <button class="chip t-${slugTipo(a.tipo)} ${a.status === 'Cancelado' ? 'cancelado' : ''}"
+              data-id="${a.id}"
+              title="${esc(a.inicio + '–' + a.fim + ' · ' + a.tipo + ' · ' + a.status)}">
+        ${esc(a.inicio)} ${esc(a.assunto)}
+      </button>`).join('');
+
+    const mais = evs.length > 3 ? `<div class="mais">+${evs.length - 3} compromisso(s)</div>` : '';
+
+    html += `
+      <div class="dia ${fora ? 'fora' : ''} ${key === HOJE_ISO ? 'hoje' : ''} ${key === state.diaSel ? 'sel' : ''}" data-data="${key}">
+        <div class="dia-num">
+          <span>${cur.getDate()}</span>
+          ${evs.length ? `<span class="cnt">${evs.length}</span>` : ''}
+        </div>
+        <div class="chips">${chips}${mais}</div>
+      </div>`;
+  }
+  $('#calGrid').innerHTML = html;
+}
+
+function renderListaDia(){
+  const evs = dadosFiltrados()
+    .filter(a => a.data === state.diaSel)
+    .sort((a,b) => a.inicio.localeCompare(b.inicio));
+
+  const corpo = evs.length ? evs.map(a => `
+    <div class="item-linha" data-id="${a.id}">
+      <div class="item-hora">${a.inicio}–${a.fim}</div>
+      <div style="flex:1;min-width:0">
+        <div class="item-ass">${esc(a.assunto)}</div>
+        <div class="item-meta">
+          ${esc(a.colaborador)} · ${esc(a.tipo)} · ${esc(a.local || 'Local não informado')}
+        </div>
+      </div>
+      <span class="badge s-${slugStatus(a.status)}">${a.status}</span>
+    </div>`).join('')
+    : `<div class="vazio">Nenhum compromisso neste dia com os filtros atuais.</div>`;
+
+  $('#listaDia').innerHTML = `<h3>Compromissos de ${fmtDataLonga(state.diaSel)}</h3>${corpo}`;
+}
+
+/* =========================================================
+   7. RENDER — TABELA
+   ========================================================= */
+function renderTabela(){
+  const d = dadosFiltrados();
+  $('#tabelaInfo').textContent = `${d.length} compromisso(s)`;
+
+  $('#tabelaCorpo').innerHTML = d.length ? d.map(a => `
+    <tr data-id="${a.id}">
+      <td style="white-space:nowrap">${fmtData(a.data)}</td>
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${a.inicio}–${a.fim}</td>
+      <td style="white-space:nowrap">${esc(a.colaborador)}</td>
+      <td style="white-space:nowrap">${esc(a.setor)}</td>
+      <td><span class="tipo-tag"><i class="ponto t-${slugTipo(a.tipo)}"></i>${esc(a.tipo)}</span></td>
+      <td class="ass" title="${esc(a.assunto)}">${esc(a.assunto)}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.local || '—')}</td>
+      <td><span class="badge s-${slugStatus(a.status)}">${a.status}</span></td>
+    </tr>`).join('')
+    : `<tr><td colspan="8" class="vazio">Nenhum compromisso com os filtros atuais.</td></tr>`;
+}
+
+/* =========================================================
+   8. RENDER — POR COLABORADOR
+   ========================================================= */
+function iniciais(nome){
+  return nome.split(' ').filter(Boolean).slice(0,2).map(p => p[0]).join('').toUpperCase();
+}
+
+function renderEquipe(){
+  const d = dadosFiltrados();
+  const grupos = new Map();
+
+  d.forEach(a => {
+    if (!grupos.has(a.colaborador)) grupos.set(a.colaborador, {setor: a.setor, itens: []});
+    grupos.get(a.colaborador).itens.push(a);
+  });
+
+  if (!grupos.size){
+    $('#equipeGrid').innerHTML = `<div class="painel vazio">Nenhum compromisso com os filtros atuais.</div>`;
+    return;
+  }
+
+  let html = '';
+  grupos.forEach((g, nome) => {
+    const itens = g.itens.slice().sort((a,b) => (a.data+a.inicio).localeCompare(b.data+b.inicio));
+    const pendentes = itens.filter(a => a.status === 'Agendado' || a.status === 'Confirmado');
+    const realizados = itens.filter(a => a.status === 'Realizado').length;
+    const proximo = itens.find(a => a.data >= HOJE_ISO && (a.status === 'Agendado' || a.status === 'Confirmado'));
+
+    html += `
+      <div class="pessoa">
+        <div class="pessoa-top">
+          <div class="avatar">${iniciais(nome)}</div>
+          <div style="min-width:0">
+            <h4>${esc(nome)}</h4>
+            <div class="setor">${esc(g.setor)}</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>${itens.length}</b><span>Total</span></div>
+          <div class="stat"><b style="color:var(--brand)">${pendentes.length}</b><span>Pendentes</span></div>
+          <div class="stat"><b style="color:#16a34a">${realizados}</b><span>Realizados</span></div>
+        </div>
+        ${proximo
+          ? `<div class="prox">Próximo: ${fmtData(proximo.data)} às ${proximo.inicio}<br>
+               <span style="font-weight:500">${esc(proximo.assunto)}</span></div>`
+          : `<div class="prox" style="background:#f8fafc;border-color:var(--line);color:var(--muted)">Sem compromissos futuros</div>`}
+      </div>`;
+  });
+
+  $('#equipeGrid').innerHTML = html;
+}
+
+/* =========================================================
+   9. RENDER GERAL
+   ========================================================= */
+function renderTudo(){
+  renderKPIs();
+  renderCalendario();
+  renderListaDia();
+  renderTabela();
+  renderEquipe();
+
+  // botão de exclusão total reflete a quantidade
+  const btn = $('#btnExcluirTodos');
+  btn.textContent = `🗑 Excluir todos (${AGENDAMENTOS.length})`;
+  btn.disabled = AGENDAMENTOS.length === 0;
+}
+
+/* =========================================================
+   10. MODAL DETALHE
+   ========================================================= */
+function abrirDetalhe(id){
+  const a = AGENDAMENTOS.find(x => x.id === id);
+  if (!a) return;
+  state.detalheId = id;
+
+  $('#detalheTitulo').textContent = a.assunto;
+  $('#detalheSub').textContent = `${fmtDataLonga(a.data)} · ${a.inicio}–${a.fim}`;
+
+  $('#detalheCorpo').innerHTML = `
+    <dl class="dl">
+      <dt>Colaborador</dt><dd>${esc(a.colaborador)}</dd>
+      <dt>Setor</dt><dd>${esc(a.setor)}</dd>
+      <dt>Tipo</dt><dd><span class="tipo-tag"><i class="ponto t-${slugTipo(a.tipo)}"></i>${esc(a.tipo)}</span></dd>
+      <dt>Local</dt><dd>${esc(a.local || '—')}</dd>
+      <dt>Prioridade</dt><dd>${esc(a.prioridade)}</dd>
+      <dt>Status</dt><dd><span class="badge s-${slugStatus(a.status)}">${a.status}</span></dd>
+      <dt>Observações</dt><dd style="font-weight:500">${esc(a.obs || '—')}</dd>
+    </dl>`;
+
+  $('#detalheAcoes').innerHTML = `
+    <button class="btn primary" data-acao="Realizado">✓ Marcar como realizado</button>
+    <button class="btn" data-acao="Confirmado">Confirmar</button>
+    <button class="btn" data-acao="Reagendado">Reagendar</button>
+    <button class="btn" data-acao="Cancelado">Cancelar</button>
+    <button class="btn" data-acao="excluir" style="color:#b91c1c;border-color:#fecaca">Excluir</button>
+    <button class="btn" data-acao="fechar">Fechar</button>`;
+
+  $('#modalDetalhe').hidden = false;
+}
+
+function fecharDetalhe(){
+  $('#modalDetalhe').hidden = true;
+  state.detalheId = null;
+}
+
+/* =========================================================
+   11. FORMULÁRIO NOVO AGENDAMENTO
+   ========================================================= */
+function abrirNovo(){
+  $('#formNovo').reset();
+  $('#nData').value = HOJE_ISO;
+  $('#nInicio').value = '09:00';
+  $('#nFim').value = '10:00';
+  $('#modalNovo').hidden = false;
+  $('#nAssunto').focus();
+}
+function fecharNovo(){ $('#modalNovo').hidden = true; }
+
+/* =========================================================
+   12. CADASTRAR SERVIDOR
+   ========================================================= */
+function setoresUnicos(){
+  return [...new Set(COLABORADORES.map(c => c.setor))]
+    .sort((a,b) => a.localeCompare(b, 'pt-BR'));
+}
+
+/* Reconstrói todos os selects/datalists de colaboradores e setores */
+function atualizarColaboradores(){
+  // filtro: colaborador
+  preencherSelect($('#fColaborador'), COLABORADORES.map(c => c.nome), 'Todos', state.filtros.colaborador);
+  // filtro: setor
+  preencherSelect($('#fSetor'), setoresUnicos(), 'Todos', state.filtros.setor);
+
+  // formulário de novo agendamento
+  const atualN = $('#nColaborador').value;
+  $('#nColaborador').innerHTML = COLABORADORES.length
+    ? COLABORADORES.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)} — ${esc(c.setor)}</option>`).join('')
+    : `<option value="">Nenhum servidor cadastrado</option>`;
+  if (COLABORADORES.some(c => c.nome === atualN)) $('#nColaborador').value = atualN;
+
+  // sugestões de setor no cadastro
+  $('#listaSetores').innerHTML = setoresUnicos()
+    .map(s => `<option value="${esc(s)}"></option>`).join('');
+}
+
+function abrirServidor(){
+  if (!COLABORADORES.length){
+    toast('Nenhum servidor cadastrado.');
+    return;
+  }
+  state.servidorPendente = null;
+  renderServidoresModal();
+  $('#modalExcluirServidor').hidden = false;
+}
+function fecharServidor(){ $('#modalServidor').hidden = true; }
+function fecharExcluirServidor(){
+  $('#modalExcluirServidor').hidden = true;
+  state.servidorPendente = null;
+}
+
+/* ---- lista de servidores no modal de exclusão ---- */
+function renderServidoresModal(){
+  const cont = $('#listaServidores');
+
+  if (!COLABORADORES.length){
+    cont.innerHTML = `<div class="vazio">Nenhum servidor cadastrado.</div>`;
+    return;
+  }
+
+  cont.innerHTML = COLABORADORES.map(c => {
+    const n = AGENDAMENTOS.filter(a => a.colaborador === c.nome).length;
+
+    if (state.servidorPendente === c.nome){
+      return `
+        <div class="srv-row pendente">
+          <div class="srv-info">
+            <div class="srv-nome">Excluir ${esc(c.nome)}?</div>
+            <div class="srv-meta">
+              ${n
+                ? `Os ${n} agendamento(s) deste servidor também serão removidos.`
+                : `Este servidor não possui agendamentos.`}
+              Esta ação não pode ser desfeita.
+            </div>
+          </div>
+          <div class="srv-acoes">
+            <button class="btn sm danger" data-confirmar="${esc(c.nome)}">Confirmar</button>
+            <button class="btn sm" data-cancelar="1">Cancelar</button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="srv-row">
+        <div class="srv-avatar">${iniciais(c.nome)}</div>
+        <div class="srv-info">
+          <div class="srv-nome">${esc(c.nome)}</div>
+          <div class="srv-meta">${esc(c.setor)} · ${n} agendamento(s)</div>
+        </div>
+        <div class="srv-acoes">
+          <button class="btn sm" data-excluir="${esc(c.nome)}"
+                  style="color:#b91c1c;border-color:#fecaca">Excluir</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ---- exclusão efetiva ---- */
+function excluirServidor(nome){
+  const colab = COLABORADORES.find(c => c.nome === nome);
+  if (!colab) return;
+
+  const removidos = AGENDAMENTOS.filter(a => a.colaborador === nome).length;
+
+  COLABORADORES = COLABORADORES.filter(c => c.nome !== nome);
+  AGENDAMENTOS  = AGENDAMENTOS.filter(a => a.colaborador !== nome);
+
+  // ajusta filtros que apontavam para o servidor/setor removido
+  if (state.filtros.colaborador === nome) state.filtros.colaborador = '';
+  if (state.filtros.setor && !setoresUnicos().includes(state.filtros.setor)) state.filtros.setor = '';
+
+  // fecha detalhe se o agendamento aberto foi removido
+  if (state.detalheId && !AGENDAMENTOS.some(a => a.id === state.detalheId)) fecharDetalhe();
+
+  state.servidorPendente = null;
+  atualizarColaboradores();
+  renderTudo();
+  renderServidoresModal();
+
+  toast(`Servidor "${nome}" excluído` + (removidos ? ` com ${removidos} agendamento(s).` : '.'));
+}
+
+/* =========================================================
+   13. EXCLUIR TODOS (com senha)
+   ========================================================= */
+function abrirSenha(){
+  if (AGENDAMENTOS.length === 0) return;
+  $('#formSenha').reset();
+  $('#senhaErro').hidden = true;
+  $('#modalSenha').hidden = false;
+  setTimeout(() => $('#senhaInput').focus(), 30);
+}
+function fecharSenha(){
+  $('#modalSenha').hidden = true;
+  $('#formSenha').reset();
+  $('#senhaErro').hidden = true;
+}
+
+/* =========================================================
+   14. EXPORTAR CSV
+   ========================================================= */
+function exportarCSV(){
+  const d = dadosFiltrados();
+  const cab = ['Data','Início','Fim','Colaborador','Setor','Tipo','Compromisso','Local/Prestador','Prioridade','Status','Observações'];
+  const linhas = d.map(a => [a.data, a.inicio, a.fim, a.colaborador, a.setor, a.tipo, a.assunto, a.local, a.prioridade, a.status, a.obs]);
+  const csv = [cab, ...linhas]
+    .map(l => l.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(';'))
+    .join('\r\n');
+
+  const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `agenda-DA-${HOJE_ISO}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* =========================================================
+   15. INICIALIZAÇÃO E EVENTOS
+   ========================================================= */
+function preencherSelect(el, itens, rotuloTodos, valorAtual){
+  el.innerHTML = `<option value="">${rotuloTodos}</option>` +
+    itens.map(i => `<option value="${esc(i)}">${esc(i)}</option>`).join('');
+  el.value = valorAtual || '';
+}
+
+function init(){
+  // selects fixos
+  preencherSelect($('#fTipo'), TIPOS, 'Todos');
+  preencherSelect($('#fStatus'), STATUSES, 'Todos');
+  $('#nTipo').innerHTML = TIPOS.map(t => `<option>${esc(t)}</option>`).join('');
+  $('#nPrioridade').innerHTML = PRIORIDADES.map(p => `<option${p === 'Média' ? ' selected' : ''}>${p}</option>`).join('');
+  $('#nStatus').innerHTML = STATUSES.map(s => `<option>${esc(s)}</option>`).join('');
+
+  // selects dinâmicos (colaboradores / setores)
+  atualizarColaboradores();
+
+  // filtros
+  const mapaFiltros = {
+    fColaborador:'colaborador', fSetor:'setor', fTipo:'tipo', fStatus:'status', fBusca:'busca'
+  };
+  Object.entries(mapaFiltros).forEach(([id, chave]) => {
+    $('#' + id).addEventListener('input', e => {
+      state.filtros[chave] = e.target.value;
+      renderTudo();
+    });
+  });
+
+  $('#btnLimpar').addEventListener('click', () => {
+    state.filtros = {colaborador:'', setor:'', tipo:'', status:'', busca:''};
+    ['fColaborador','fSetor','fTipo','fStatus'].forEach(id => $('#' + id).value = '');
+    $('#fBusca').value = '';
+    renderTudo();
+  });
+
+  // abas
+  $$('.aba').forEach(b => b.addEventListener('click', () => {
+    state.view = b.dataset.view;
+    $$('.aba').forEach(x => x.classList.toggle('ativa', x === b));
+    $('#view-calendario').hidden = state.view !== 'calendario';
+    $('#view-tabela').hidden     = state.view !== 'tabela';
+    $('#view-equipe').hidden     = state.view !== 'equipe';
+  }));
+
+  // navegação do calendário
+  $('#calPrev').addEventListener('click', () => {
+    state.mes = new Date(state.mes.getFullYear(), state.mes.getMonth() - 1, 1);
+    renderCalendario();
+  });
+  $('#calNext').addEventListener('click', () => {
+    state.mes = new Date(state.mes.getFullYear(), state.mes.getMonth() + 1, 1);
+    renderCalendario();
+  });
+  $('#calHoje').addEventListener('click', () => {
+    state.mes = new Date(HOJE.getFullYear(), HOJE.getMonth(), 1);
+    state.diaSel = HOJE_ISO;
+    renderCalendario();
+    renderListaDia();
+  });
+
+  // clique no calendário
+  $('#calGrid').addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (chip){ abrirDetalhe(Number(chip.dataset.id)); return; }
+    const cel = e.target.closest('.dia');
+    if (cel){ state.diaSel = cel.dataset.data; renderCalendario(); renderListaDia(); }
+  });
+
+  // lista do dia
+  $('#listaDia').addEventListener('click', e => {
+    const item = e.target.closest('.item-linha');
+    if (item) abrirDetalhe(Number(item.dataset.id));
+  });
+
+  // tabela
+  $('#tabelaCorpo').addEventListener('click', e => {
+    const tr = e.target.closest('tr[data-id]');
+    if (tr) abrirDetalhe(Number(tr.dataset.id));
+  });
+
+  // ações do modal de detalhe
+  $('#detalheAcoes').addEventListener('click', e => {
+    const b = e.target.closest('[data-acao]');
+    if (!b) return;
+    const acao = b.dataset.acao;
+    if (acao === 'fechar'){ fecharDetalhe(); return; }
+
+    const a = AGENDAMENTOS.find(x => x.id === state.detalheId);
+    if (!a) return;
+
+    if (acao === 'excluir'){
+      if (confirm('Excluir este agendamento?')){
+        AGENDAMENTOS = AGENDAMENTOS.filter(x => x.id !== a.id);
+        fecharDetalhe();
+        renderTudo();
+        toast('Agendamento excluído.');
+      }
+      return;
+    }
+    a.status = acao;
+    renderTudo();
+    abrirDetalhe(a.id);
+  });
+  $('#modalDetalhe').addEventListener('click', e => {
+    if (e.target.id === 'modalDetalhe') fecharDetalhe();
+  });
+
+  // novo agendamento
+  $('#btnNovo').addEventListener('click', abrirNovo);
+  $('#fecharNovo').addEventListener('click', fecharNovo);
+  $('#cancelarNovo').addEventListener('click', fecharNovo);
+  $('#modalNovo').addEventListener('click', e => {
+    if (e.target.id === 'modalNovo') fecharNovo();
+  });
+
+  $('#formNovo').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!COLABORADORES.length){
+      toast('Cadastre um servidor antes de criar agendamentos.');
+      return;
+    }
+    const nome = $('#nColaborador').value;
+    const colab = COLABORADORES.find(c => c.nome === nome);
+
+    AGENDAMENTOS.push({
+      id: seq++,
+      data: $('#nData').value,
+      inicio: $('#nInicio').value,
+      fim: $('#nFim').value || $('#nInicio').value,
+      colaborador: nome,
+      setor: colab ? colab.setor : '—',
+      tipo: $('#nTipo').value,
+      assunto: $('#nAssunto').value.trim(),
+      local: $('#nLocal').value.trim(),
+      status: $('#nStatus').value,
+      prioridade: $('#nPrioridade').value,
+      obs: $('#nObs').value.trim()
+    });
+
+    fecharNovo();
+    renderTudo();
+    toast('Agendamento criado com sucesso.');
+  });
+
+  // ---- CADASTRAR SERVIDOR ----
+  $('#btnCadastrarServidor').addEventListener('click', () => {
+    $('#formServidor').reset();
+    $('#modalServidor').hidden = false;
+    $('#sNome').focus();
+  });
+  $('#fecharServidor').addEventListener('click', fecharServidor);
+  $('#cancelarServidor').addEventListener('click', fecharServidor);
+  $('#modalServidor').addEventListener('click', e => {
+    if (e.target.id === 'modalServidor') fecharServidor();
+  });
+
+  $('#formServidor').addEventListener('submit', e => {
+    e.preventDefault();
+    const nome  = $('#sNome').value.trim().replace(/\s+/g,' ');
+    const setor = $('#sSetor').value.trim().replace(/\s+/g,' ');
+
+    if (COLABORADORES.some(c => c.nome.toLowerCase() === nome.toLowerCase())){
+      toast('Este servidor já está cadastrado.');
+      $('#sNome').focus();
+      return;
+    }
+
+    COLABORADORES.push({nome, setor});
+    atualizarColaboradores();
+    fecharServidor();
+    renderTudo();
+    toast(`Servidor "${nome}" cadastrado.`);
+  });
+
+  // ---- EXCLUIR SERVIDOR ----
+  $('#btnExcluirServidor').addEventListener('click', abrirServidor);
+  $('#fecharExcluirServidor').addEventListener('click', fecharExcluirServidor);
+  $('#cancelarExcluirServidor').addEventListener('click', fecharExcluirServidor);
+  $('#modalExcluirServidor').addEventListener('click', e => {
+    if (e.target.id === 'modalExcluirServidor') fecharExcluirServidor();
+  });
+
+  $('#listaServidores').addEventListener('click', e => {
+    const btnExcluir    = e.target.closest('[data-excluir]');
+    const btnConfirmar  = e.target.closest('[data-confirmar]');
+    const btnCancelar   = e.target.closest('[data-cancelar]');
+
+    if (btnExcluir){
+      state.servidorPendente = btnExcluir.dataset.excluir;
+      renderServidoresModal();
+      return;
+    }
+    if (btnConfirmar){
+      excluirServidor(btnConfirmar.dataset.confirmar);
+      return;
+    }
+    if (btnCancelar){
+      state.servidorPendente = null;
+      renderServidoresModal();
+    }
+  });
+
+  // ---- EXCLUIR TODOS (senha) ----
+  $('#btnExcluirTodos').addEventListener('click', abrirSenha);
+  $('#fecharSenha').addEventListener('click', fecharSenha);
+  $('#cancelarSenha').addEventListener('click', fecharSenha);
+  $('#modalSenha').addEventListener('click', e => {
+    if (e.target.id === 'modalSenha') fecharSenha();
+  });
+
+  $('#formSenha').addEventListener('submit', e => {
+    e.preventDefault();
+    if ($('#senhaInput').value === SENHA_ADMIN){
+      const total = AGENDAMENTOS.length;
+      AGENDAMENTOS = [];
+      state.detalheId = null;
+      $('#modalDetalhe').hidden = true;
+      fecharSenha();
+      renderTudo();
+      toast(`${total} agendamento(s) excluído(s).`);
+    } else {
+      $('#senhaErro').hidden = false;
+      $('#senhaInput').value = '';
+      $('#senhaInput').focus();
+    }
+  });
+
+  // exportar
+  $('#btnExportar').addEventListener('click', exportarCSV);
+
+  // Esc fecha modais
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape'){
+      if (!$('#modalDetalhe').hidden) fecharDetalhe();
+      if (!$('#modalNovo').hidden) fecharNovo();
+      if (!$('#modalServidor').hidden) fecharServidor();
+      if (!$('#modalExcluirServidor').hidden) fecharExcluirServidor();
+      if (!$('#modalSenha').hidden) fecharSenha();
+    }
+  });
+
+  renderTudo();
+}
+
+init();
+</script>
+</body>
+</html>
